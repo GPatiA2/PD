@@ -48,10 +48,13 @@ filter2 xs p q = (us, vs)
          vs = filter q xs
 
 -- b
+filters:: [a] -> [(a->Bool)] -> [[a]]
+filters xs ys = map (\f -> filter f xs) ys
 
 
 -- c
-
+mapx :: t -> [t -> b] -> [b]
+mapx x fs = map (\f -> f x) fs
 
 -- d
 iguales :: (Enum a, Eq b) => (a -> b) -> (a -> b) -> a -> a -> Bool
@@ -82,15 +85,17 @@ ex n m p = y
 
 -- ej 3
 
--- a
+-- a last 
 last' :: [a] -> a
 last' = foldl1 (\_ x -> x)
 
--- b
+-- b reverse 
 reverse' :: [a] -> [a]
 reverse' = foldl (\acc x -> x : acc) []
 
 -- c (all)
+all':: (a->Bool) -> [a] -> Bool
+all' f xs = foldr (\x acc -> f x && acc) True xs
 
 
 -- d
@@ -106,18 +111,30 @@ filter' :: (a -> Bool) -> [a] -> [a]
 filter' p = foldr (\x acc -> if p x then x : acc else acc) []
 
 -- g (takeWhile)
+takeWhile' :: Foldable t => (a -> Bool) -> t a -> [a]
+takeWhile' f xs = foldr (\x acc -> if f x then x:acc else []) [] xs
 
 -- h (++)
+concat':: [a]->[a]->[a]
+concat' xs ys = foldr (\x acc -> x:acc) ys xs
 
 -- ej 4
+foldr1' :: (a -> a -> a) -> [a] -> a
+foldr1' f (x:xs) = foldr f x xs 
+
+foldl1' :: (a -> a -> a) -> [a] -> a
+foldl1' f (x:xs) = foldl f x xs 
 
 -- ej 5
 
 -- a
+cuadrados' :: (Num b, Enum b) => b -> [b]
 cuadrados' n = map (^2) [0..n]
 
 -- b
+emcuadrados' :: (Num b, Enum b) => b -> [(b, b)]
 emcuadrados' n = reverse (zip [0..n] (map (^2) [0..n]))
 
 -- d
--- pot3' n = filter (<n) (filter ((`mod` 100) == 67) (iterate (3^) [1..]))
+--pot3' n = filter (<n) ( filter (\x -> f x) $ (iterate (3^) [1..]) ) 
+--	where f x = (x `mod` 100) == 67
