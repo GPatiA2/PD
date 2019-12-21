@@ -1,4 +1,4 @@
-data Vertice = A|B|C|D|E|F
+data Vertice = A|B|C|D|E|F deriving (Ord)
 data Grafo = G [Vertice] [(Vertice, Vertice)]
 
 -- mat_ady g = matriz adyacencia de g
@@ -11,6 +11,8 @@ g4 = G [A, B, C, D] [(A, B), (B, C), (B, D), (C, D)]
 g5 = G [D, F, C, A] [(D, F), (F, C), (F, A), (C, A)]
 g6 = G [D, F, C, A] [(D, F), (F, C), (F, D), (C, A)]
 g7 = G [A, B, C, D, E, F] [(A, D), (A, E), (B, C), (D, B), (D, E), (E, A), (E, F), (F, C)]
+g8 = G [A, B, C, D, E] [(A, B), (A, C), (B, C), (B, D), (C, D), (E, C)]
+g9 = G [A, B] [(A, B)]
 
 ng3 = G [A, C, D] [(A, C), (C, D), (A, F)]
 
@@ -56,6 +58,7 @@ instance Eq Grafo where
     (==) (G xs ys) (G xs' ys') = mismoGrafo (G xs ys) (G xs' ys')
     (/=) (G xs ys) (G xs' ys') = mismoGrafo (G xs ys) (G xs' ys')
 
+
 -- Extra functions
 
 merge :: ([a], [a]) -> [a]
@@ -64,7 +67,7 @@ merge ([], ys) = ys
 merge ((x:xs), (y:ys)) = x : y : merge (xs, ys)
 
 equivalent :: Eq a => [a] -> [a] -> Bool
-equivalent xs ys = and ([elem y xs | y <- ys])
+equivalent xs ys = length xs == length ys && and ([elem y xs | y <- ys])
 
 list_ady :: Vertice -> Grafo -> [Vertice]
 list_ady v (G xs ys) = [ b | (a, b) <- ys, v == a]
@@ -83,6 +86,7 @@ mismoGrafo (G xs ys) (G xs' ys') =
     length xs == length xs' && 
     length ys == length ys' &&
     quicksort [length (list_ady x (G xs ys)) | x <- xs] == quicksort [length (list_ady x (G xs' ys')) | x <- xs']
+    -- missing: check TRUE isomorphism by generating all the other isomorph graph and comparing
     
 
 sin_repetidos :: Eq a => [a] -> Bool
@@ -90,6 +94,12 @@ sin_repetidos [] = True
 sin_repetidos [_] = True
 sin_repetidos (x:xs) = if elem x xs then False
                                     else sin_repetidos xs
+
+visita_vertices (G xs ys) = quicksort (nub ((head xs):[ v | m <- xs, v <- list_ady m (G xs ys)]))
+
+nub :: (Eq a) => [a] -> [a]
+nub [] =  []
+nub (x:xs) =  x : nub (filter (\y -> not (x == y)) xs)
 
 -- Asked functions
 
@@ -124,3 +134,9 @@ caminosAB (G xs ys) u v 1 = if elem (u, v) ys then [[u,v]]
     else []
 caminosAB (G xs ys) u v k = filter p [u:vs | n <- [1..k-1], w <- list_ady u (G xs ys), vs <- (caminosAB (G xs ys)) w v n]
     where p xs = (length xs - 1) == k
+
+conexo :: Grafo -> Bool
+conexo (G xs ys)
+    | es_grafo (G xs ys) == False = False
+    | length xs == 1 = True
+    | otherwise = equivalent xs (visita_vertices (G xs ys))
